@@ -35,10 +35,9 @@
 #include "test_flash.h"
 #include "test_embbeded_SRAM.h"
 #include "test_MRAM.h"
-#include "hashmap_string.h"
 #include "clht_lb.h"
 #include "test_hashmap_numbers.h"
-#include "test_hashmap_string.h"
+#include "benchmark_lpht.h"
 #include "MRAM_driver.h"
 #include "benchmark_clht.h"
 #include "settings.h"
@@ -387,8 +386,8 @@ int main(void)
   //  	  	  	 SIZE =
 
   //Fix from errata sheet
-  //uint32_t address = GPV_BASE + 0x8108;
-  //address = address | 0x01;
+  uint32_t address = GPV_BASE + 0x8108;
+  address = address | 0x01;
 
   HAL_Delay(1000);
   //int randSeeds[5] = {129879, 98019823, 1239889, 12980, 928308};
@@ -420,7 +419,7 @@ int main(void)
 	//print_malloc_map();
 	//benchmark_clht_write_throughput();
 	//test_clht();
-	test_hashmap_string_throughput();
+	benchmark_lpht_throughput();
 
 
 	HAL_Delay(30*1000);

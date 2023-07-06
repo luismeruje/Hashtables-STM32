@@ -4,32 +4,40 @@
  *  Created on: Apr 4, 2023
  *      Author: luisferreira
  */
-#include "test_hashmap_string.h"
-#include "hashmap_string.h"
+#include "benchmark_lpht.h"
+#include "lpht.h"
 #include "settings.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "stm32h7xx_hal.h"
 #include "settings.h"
 
+#if STM32
+#include "stm32h7xx_hal.h"
 extern char keys[NUM_RECORDS_TO_INSERT][FIELD_SIZE];
-
-
-//Time count from: https://stackoverflow.com/questions/66241806/calculate-the-execution-time-of-program-in-c
-void test_hashmap_string_throughput(){
-	int keysNotFound = 0, correctValues = 0;
-#if MRAMEN
-	int startTime = 0, elapsedTime = 0;
-	char * value;
 #else
-	struct timespec start, end;
+#include <time.h>
+#include KEYS_FILE
 #endif
 
 
-    //char keys [NUM_RECORDS_TO_INSERT][FIELD_SIZE];
 
-    //Generate random values
+
+//Time count from: https://stackoverflow.com/questions/66241806/calculate-the-execution-time-of-program-in-c
+void benchmark_lpht_throughput(){
+	int keysNotFound = 0, correctValues = 0;
+	char * value;
+#if STM32
+	int startTime = 0, elapsedTime = 0;
+#else
+	struct timespec start, end;
+	double time_spent;
+#endif
+
+
+//char keys [NUM_RECORDS_TO_INSERT][FIELD_SIZE];
+
+//Generate random values
 //    for (int i = 0; i < NUM_RECORDS_TO_INSERT ; i++){
 //        for (int j = 0; j < FIELD_SIZE-1; j++){
 //            //Random char between 48 and 122 ASCII decimal
@@ -41,11 +49,11 @@ void test_hashmap_string_throughput(){
 
 
 //====== Write speed===========
-	printf("Keys pointer: %p\n", keys);
-	printf("First string pointer: %p\n", keys[0]);
-    printf("First string: %s\n", keys[0]);
-    HashMapString * hashMap = create_hash_map_string();
-#if MRAMEN
+printf("Keys pointer: %p\n", keys);
+printf("First string pointer: %p\n", keys[0]);
+printf("First string: %s\n", keys[0]);
+LPHT * hashMap = create_lpht();
+#if STM32
     startTime = HAL_GetTick();
 #else
     clock_gettime(CLOCK_REALTIME, &start);
@@ -54,21 +62,24 @@ void test_hashmap_string_throughput(){
 
     //Insert values
     for(int i = 0; i < NUM_RECORDS_TO_INSERT ; i++){
-        ht_string_put(hashMap, keys[i], keys[i]);
+        lpht_put(hashMap, keys[i], keys[i]);
+        //printf("Num_collisions: %lu\n", lpht_get_collisions(hashMap));
     }
-#if MRAMEN
+#if STM32
     elapsedTime = HAL_GetTick() - startTime;
     printf("Took %d ms to insert %d records \n", elapsedTime, NUM_RECORDS_TO_INSERT);
-    printf("Number of collisions %d\n Number of replacements %d \n", get_collisions(hashMap), get_replacements(hashMap));
+	printf("Number of collisions %lu\n Number of replacements %lu \n", lpht_get_collisions(hashMap), lpht_get_replacements(hashMap));
 #else
     clock_gettime(CLOCK_REALTIME, &end);
-        double time_spent = (end.tv_sec - start.tv_sec) +
-                                (end.tv_nsec - start.tv_nsec) / BILLION;
-        printf("Took %lf to insert %d records\n", time_spent, NUM_RECORDS_TO_INSERT);
+	time_spent = (end.tv_sec - start.tv_sec) +
+							(end.tv_nsec - start.tv_nsec) / BILLION;
+	printf("Took %lf to insert %d records\n", time_spent, NUM_RECORDS_TO_INSERT);
+	printf("Number of collisions %u\n Number of replacements %u \n", lpht_get_collisions(hashMap), lpht_get_replacements(hashMap));
 #endif
 
+
 //====== Read speed===========
-#if MRAMEN
+#if STM32
     startTime = HAL_GetTick();
 #else
     clock_gettime(CLOCK_REALTIME, &start);
@@ -76,27 +87,27 @@ void test_hashmap_string_throughput(){
 
 
 	for(int i = 0; i < NUM_RECORDS_TO_INSERT ; i++){
-		value = ht_string_get(hashMap, keys[i]);
+		value = lpht_get(hashMap, keys[i]);
 		if(value != NULL){
 			free(value);
 		}
 	}
 
-#if MRAMEN
+#if STM32
     elapsedTime = HAL_GetTick() - startTime;
     printf("Took %d ms to read %d records \n", elapsedTime, NUM_RECORDS_TO_INSERT);
 
 #else
     clock_gettime(CLOCK_REALTIME, &end);
-        double time_spent = (end.tv_sec - start.tv_sec) +
-                                (end.tv_nsec - start.tv_nsec) / BILLION;
-        printf("Took %lf to insert %d records\n", time_spent, NUM_RECORDS_TO_INSERT);
+	time_spent = (end.tv_sec - start.tv_sec) +
+							(end.tv_nsec - start.tv_nsec) / BILLION;
+	printf("Took %lf to read %d records\n", time_spent, NUM_RECORDS_TO_INSERT);
 #endif
 
 //========= Consistency check ========
 
 	for(int i = 0; i < NUM_RECORDS_TO_INSERT ; i++){
-		value = ht_string_get(hashMap, keys[i]);
+		value = lpht_get(hashMap, keys[i]);
 		if (value == NULL){
 			keysNotFound++;
 			printf("Key %s not found \n", keys[i]);
@@ -111,13 +122,15 @@ void test_hashmap_string_throughput(){
 		}
 	}
 
-
-
-
-
-	destroy_hash_map_string(hashMap);
+	destroy_lpht(hashMap);
 
 	printf("Consistency check.\n \tKeys not found: %d\n \tNon-matching values: %d\n", keysNotFound, (NUM_RECORDS_TO_INSERT - correctValues - keysNotFound));
 
 }
 
+
+#if STM32 == 0
+int main (int argc, char ** argv){
+	benchmark_lpht_throughput();
+}
+#endif

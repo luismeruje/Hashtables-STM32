@@ -57,7 +57,7 @@ __RAM_FUNC void mram_read_8bit_blocks(uint32_t address, void *data, uint16_t nrW
 	__IO uint8_t *mramSrc = (__IO uint8_t *) address;
 	uint8_t *dataDest = (uint8_t *) data;
 	for(int i = 0; i < nrWords; i++){
-		*(uint8_t *) dataDest = *mramSrc;
+		*(__IO uint8_t *) dataDest = *mramSrc;
 		mramSrc++;
 		dataDest++;
 	}
@@ -66,11 +66,14 @@ __RAM_FUNC void mram_read_8bit_blocks(uint32_t address, void *data, uint16_t nrW
 
 
 __RAM_FUNC void mram_read_16bit_blocks(uint32_t address, void *data, uint16_t nrWords){
+//	if(address % 2){
+//		HAL_Delay(100);
+//	}
 	__IO uint16_t *mramSrc = (__IO uint16_t *) address;
 	uint16_t *dataDest = (uint16_t *) data;
 
 	for(int i = 0; i < nrWords; i++){
-		*(uint16_t *) dataDest = *mramSrc;
+		*(__IO uint16_t *) dataDest = *mramSrc;
 		mramSrc++;
 		dataDest++;
 	}
@@ -81,7 +84,7 @@ __RAM_FUNC void mram_read_32bit_blocks(uint32_t address, void *data, uint16_t nr
 	__IO uint32_t *mramSrc = (__IO uint32_t *) address;
 	uint32_t *dataDest = (uint32_t *) data;
 	for(int i = 0; i < nrWords; i++){
-		*(uint32_t *) dataDest = *mramSrc;
+		*(__IO uint32_t *) dataDest = *mramSrc;
 		mramSrc++;
 		dataDest++;
 	}
@@ -92,7 +95,7 @@ __RAM_FUNC void mram_read_64bit_blocks(uint32_t address, void *data, uint16_t nr
 	__IO uint64_t *mramSrc = (__IO uint64_t *) address;
 	uint64_t *dataDest = (uint64_t *) data;
 	for(int i = 0; i < nrWords; i++){
-		*(uint64_t *) dataDest = *mramSrc;
+		*(__IO uint64_t *) dataDest = *mramSrc;
 		mramSrc++;
 		dataDest ++;
 	}
@@ -151,9 +154,30 @@ void mram_write (uint32_t mramAddr, void * src, uint16_t numBytes){
 }
 
 __RAM_FUNC void mram_wipe(){
-	uint32_t addr = MRAM_BANK_ADDR;
+	__IO uint32_t addr = MRAM_BANK_ADDR;
 	for(; addr < MRAM_BANK_ADDR_LIMIT_4Mb; addr+=2){
 		* (uint16_t *) addr = 0;
 	}
+}
+
+__RAM_FUNC void mram_partial_wipe(uint32_t mramAddr, uint16_t numBytes){
+	if((numBytes%2)){
+		exit(-1);
+	}
+	__IO uint16_t * addr = (uint16_t *) mramAddr;
+	uint16_t zero = 0;
+	for(int i = 0; i < numBytes/2; i++){
+		*addr = zero;
+		addr++;
+	}
+}
+
+__RAM_FUNC void mram_increment_uint32_t(uint32_t address){
+	__IO uint32_t * add = (__IO uint32_t*) address;
+	__IO uint32_t val = *add;
+	__DSB();
+	val++;
+	*add = val;
+	__DSB();
 }
 

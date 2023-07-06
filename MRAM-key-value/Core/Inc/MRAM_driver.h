@@ -22,10 +22,15 @@ __RAM_FUNC void mram_read_64bit_blocks(uint32_t address, void *data, uint16_t nr
 
 __RAM_FUNC void mram_wipe();
 
+__RAM_FUNC void mram_partial_wipe(uint32_t mramAddr, uint16_t numBytes);
+
+__RAM_FUNC void mram_increment_uint32_t(uint32_t address);
+
 uint16_t compare_array_with_MRAM(uint32_t mramAddress, void *data, uint16_t numBytes);
 
 void mram_read(void * dest, uint32_t mramAddr, uint16_t numBytes);
 void mram_write (uint32_t mramAddr, void * src, uint16_t numBytes);
 void * mram_malloc(uint32_t num_bytes);
 void * mram_free(void *);
+
 #endif

@@ -8,13 +8,13 @@
 #ifndef INC_SETTINGS_H_
 #define INC_SETTINGS_H_
 
-#define STM32 1
-#define MRAM 1
+#define STM32 0
+#define MRAM 0
 #define MMAP 0
 #define BILLION  1000000000.0
 
 //Different for 32-bit and 64-bit systems
-#define MEMORY_ADDRESS_SIZE uint32_t
+#define MEMORY_ADDRESS_SIZE uint64_t
 
 //For clht, select only 4 byte-sized keys/values.
 #define KEYS_FILE "keys-32bytes.h"

@@ -9,6 +9,5 @@
 #define INC_TEST_HASHMAP_STRING_H_
 #include "settings.h"
 
-void benchmark_ht_string_throughput();
-
+void benchmark_lpht_throughput();
 #endif /* INC_TEST_HASHMAP_STRING_H_ */
