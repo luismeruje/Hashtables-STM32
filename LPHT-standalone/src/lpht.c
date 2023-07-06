@@ -127,9 +127,9 @@ uint8_t _lpht_is_block_occupied(uint16_t block_number, uint8_t * block_availabil
 
 
 	uint8_t occupied = 0;
-	uint16_t block;
 
 	#if MRAM
+		uint16_t block;
 		uint32_t address = (uint32_t) &block_availability[block_byte_index];
 		if(address % 2){
 			mram_read_16bit_blocks(address-1,&block,1);
@@ -150,11 +150,12 @@ void _lpht_occupy_block(uint16_t block_number, uint8_t * block_availability){
 	uint8_t byte_bit_index = block_number % 8;
 
 
-	uint16_t block;
+	
 	/*if(block_byte_index==686){
 			HAL_Delay(100);
 	}*/
 	#if MRAM
+	uint16_t block;
 	uint32_t address = (uint32_t) &block_availability[block_byte_index];
 	if(address % 2){
 	   mram_read_16bit_blocks(address-1,&block,1);
