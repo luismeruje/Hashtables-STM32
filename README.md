@@ -32,7 +32,7 @@ The number of keys in each dataset is as follows:
 
 The STM32CubeIDE project is setup to be used with a `NUCLEO-H743ZI` board. If you intend to use a different board or microcontroller, use the standalone modules to integrate the Hash Tables into your own project.
 
-## LPHT - Linear Probing Hash Table
+# LPHT - Linear Probing Hash Table
 The linear probing Hash Table divides a zone of memory into consecutive key/value slots. During a put operation, the key is hashed into a slot. If the slot is empty, the key/value pair is inserted into the slot, otherwise an attempt is made for the following slot, and so on until an available spot is found. Slot occupation information is kept in a separate array of bytes, where each bit describes the occupation of a particular slot.
 
 For further details on LPHT usage see [LPHT's README](./LPHT.md). 
