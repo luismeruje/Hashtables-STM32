@@ -6,19 +6,16 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Core/Src/Hash_Table/clht_lb.c \
-../Core/Src/Hash_Table/clht_lb_mram.c \
 ../Core/Src/Hash_Table/hashmap_numbers.c \
 ../Core/Src/Hash_Table/lpht.c 
 
 OBJS += \
 ./Core/Src/Hash_Table/clht_lb.o \
-./Core/Src/Hash_Table/clht_lb_mram.o \
 ./Core/Src/Hash_Table/hashmap_numbers.o \
 ./Core/Src/Hash_Table/lpht.o 
 
 C_DEPS += \
 ./Core/Src/Hash_Table/clht_lb.d \
-./Core/Src/Hash_Table/clht_lb_mram.d \
 ./Core/Src/Hash_Table/hashmap_numbers.d \
 ./Core/Src/Hash_Table/lpht.d 
 
@@ -30,7 +27,7 @@ Core/Src/Hash_Table/%.o Core/Src/Hash_Table/%.su: ../Core/Src/Hash_Table/%.c Cor
 clean: clean-Core-2f-Src-2f-Hash_Table
 
 clean-Core-2f-Src-2f-Hash_Table:
-	-$(RM) ./Core/Src/Hash_Table/clht_lb.d ./Core/Src/Hash_Table/clht_lb.o ./Core/Src/Hash_Table/clht_lb.su ./Core/Src/Hash_Table/clht_lb_mram.d ./Core/Src/Hash_Table/clht_lb_mram.o ./Core/Src/Hash_Table/clht_lb_mram.su ./Core/Src/Hash_Table/hashmap_numbers.d ./Core/Src/Hash_Table/hashmap_numbers.o ./Core/Src/Hash_Table/hashmap_numbers.su ./Core/Src/Hash_Table/lpht.d ./Core/Src/Hash_Table/lpht.o ./Core/Src/Hash_Table/lpht.su
+	-$(RM) ./Core/Src/Hash_Table/clht_lb.d ./Core/Src/Hash_Table/clht_lb.o ./Core/Src/Hash_Table/clht_lb.su ./Core/Src/Hash_Table/hashmap_numbers.d ./Core/Src/Hash_Table/hashmap_numbers.o ./Core/Src/Hash_Table/hashmap_numbers.su ./Core/Src/Hash_Table/lpht.d ./Core/Src/Hash_Table/lpht.o ./Core/Src/Hash_Table/lpht.su
 
 .PHONY: clean-Core-2f-Src-2f-Hash_Table
 

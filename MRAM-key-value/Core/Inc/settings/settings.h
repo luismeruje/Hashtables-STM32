@@ -25,7 +25,15 @@
 #define KEYS_FILE "keys-32bytes.h"
 #define NUM_RECORDS_TO_INSERT 4096 //25000
 #define FIELD_SIZE 32 //Number of bytes for each key/value. Don't forget 1 byte is for \0
+//WARNING: Only tested with this specific NUM_BYTES_CAPACITY
+#define NUM_BYTES_CAPACITY 524288
 //==================
+
+#if STM32
+#define PRINT_UNSIGNED_FORMAT "%lu"
+#else
+#define PRINT_UNSIGNED_FORMAT "%u"
+#endif
 
 //WARNING: For hashmap_string, must set USABLE_CAPACITY to correct value according to PAIR_SIZE ,i.e. (2 * FIELD_SIZE)
 

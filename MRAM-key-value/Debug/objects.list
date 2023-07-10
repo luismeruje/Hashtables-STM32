@@ -18,7 +18,6 @@
 "./Core/Src/system_stm32h7xx.o"
 "./Core/Src/Hash_Table/Hash_Func/crc32.o"
 "./Core/Src/Hash_Table/clht_lb.o"
-"./Core/Src/Hash_Table/clht_lb_mram.o"
 "./Core/Src/Hash_Table/hashmap_numbers.o"
 "./Core/Src/Hash_Table/lpht.o"
 "./Core/Startup/startup_stm32h743zitx.o"

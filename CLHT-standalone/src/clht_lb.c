@@ -40,25 +40,39 @@
 
 #include "clht_lb.h"
 
-#ifndef VANILLA_CLHT
-
 
 #include <math.h>
 #include <stdlib.h>
-#include <malloc.h>
 #include <string.h>
+#include "settings.h"
 
+#if STM32
+#define PRINT_UNSIGNED_FORMAT "%lu"
+#include "stm32h7xx_hal.h"
+extern CRC_HandleTypeDef hcrc;
+#include <malloc.h>
+#else
+#define PRINT_UNSIGNED_FORMAT "%u"
+#include <unistd.h>
+#include <stdlib.h>
+#endif
 
+#if MRAM
 #include "mram_commons.h"
 #include "MRAM_driver.h"
-#include "stm32h7xx_hal.h"
 #include "MRAM_heap.h"
 #include "MRAM_driver.h"
+uint32_t zero = 0;
+#endif
+
+
+
+
 
 int clhtBusy = 0;
 int clhtHardFault = 0;
 
-extern CRC_HandleTypeDef hcrc;
+
 
 #define MRAM_CHECKS
 
@@ -115,15 +129,20 @@ clht_bucket_create()
 {
 
   bucket_t* bucket = NULL;
+  #if MRAM
   bucket = memalign_mram(CACHE_LINE_SIZE, sizeof(bucket_t));
-  /*bucket = malloc(sizeof(bucket_t));*/
+  #else
+  posix_memalign((void **) &bucket, CACHE_LINE_SIZE, sizeof(bucket_t));
+  #endif
 
+#if MRAM
 #ifdef MRAM_CHECKS
   if(bucket == NULL){
 	  printf("Malloc failed. Probably out of memory.\n");
   } else if((uint32_t) bucket < MRAM_BANK_ADDR || (uint32_t) bucket > MRAM_BANK_ADDR_LIMIT_4Mb){
 	  printf("WARNING: Malloc sits outside of MRAM boundaries!! \n");
   }
+#endif
 #endif
   if (bucket == NULL)
     {
@@ -132,19 +151,31 @@ clht_bucket_create()
 
   bucket->lock = 0;
 
-  uint32_t zero = 0;
+
   uint32_t j;
   for (j = 0; j < ENTRIES_PER_BUCKET; j++)
     {
+      #if MRAM
       mram_write_32bit_blocks((uint32_t) &(bucket->key[j]), &zero, 1);
+      #else
+      bucket->key[j] = 0;
+      #endif
     }
-  mram_write_32bit_blocks((uint32_t)&(bucket->next), &zero, 1);
+    #if MRAM
+    mram_write_32bit_blocks((uint32_t)&(bucket->next), &zero, 1);
+    #else
+    bucket->next = NULL;
+    #endif
+   
+  
   numBuckets++;
+#if MRAM
 #ifdef MRAM_CHECKS
   uint32_t nextAddress = (uint32_t) bucket->next;
   if((nextAddress != 0) || ((uint32_t) bucket < MRAM_BANK_ADDR) || ( (uint32_t)bucket > MRAM_BANK_ADDR_LIMIT_4Mb)){
 	  printf("WARNING: Created bucket where next is %lx and bucket has address %lx\n", nextAddress, (uint32_t) bucket);
   }
+#endif
 #endif
 
   return bucket;
@@ -153,14 +184,23 @@ clht_bucket_create()
 clht_t*
 clht_create(uint64_t num_buckets)
 {
+  #if MRAM
   clht_t* w = (clht_t*) memalign_mram(CACHE_LINE_SIZE, sizeof(clht_t));
+  #else
+  clht_t* w;
+  posix_memalign((void **) &w, CACHE_LINE_SIZE, sizeof(clht_t));
+  #endif
   if (w == NULL)
     {
       printf("** malloc @ hatshtalbe\n");
       return NULL;
     }
   clht_hashtable_t * table = clht_hashtable_create(num_buckets);
+  #if MRAM
   mram_write_32bit_blocks((uint32_t) &(w->ht), (void *) &table, 1);
+  #else
+  w->ht = table;
+  #endif
   if (w->ht == NULL)
     {
       free(w);
@@ -173,7 +213,6 @@ clht_create(uint64_t num_buckets)
 clht_hashtable_t*
 clht_hashtable_create(uint64_t num_buckets)
 {
-	uint32_t zero = 0;
  //Global variables for stats
 #ifdef STATS
   numBuckets = 0;
@@ -187,7 +226,11 @@ clht_hashtable_create(uint64_t num_buckets)
     }
 
   /* Allocate the table itself. */
+  #if MRAM
   hashtable = (clht_hashtable_t*) memalign_mram(CACHE_LINE_SIZE, sizeof(clht_hashtable_t));
+  #else
+  posix_memalign((void **) &hashtable, CACHE_LINE_SIZE, sizeof(clht_hashtable_t));
+  #endif
   printf("Hashtable base address: %p\n", hashtable);
   if (hashtable == NULL)
     {
@@ -196,10 +239,15 @@ clht_hashtable_create(uint64_t num_buckets)
     }
 
   /* hashtable->table = calloc(num_buckets, (sizeof(bucket_t))); */
+  #if MRAM
   void * pointer = memalign_mram(CACHE_LINE_SIZE, num_buckets * (sizeof(bucket_t)));
   printf("Table base address: %p\n", pointer);
   mram_write_32bit_blocks((uint32_t)  &hashtable->table, &pointer, 1);
   printf("Stored table base address: %p\n", hashtable->table);
+  #else
+  posix_memalign( (void **) &hashtable->table, CACHE_LINE_SIZE, num_buckets * (sizeof(bucket_t)));
+  #endif
+
   if (hashtable->table == NULL)
     {
       printf("** alloc: hashtable->table\n"); fflush(stdout);
@@ -207,7 +255,7 @@ clht_hashtable_create(uint64_t num_buckets)
       return NULL;
     }
 
-  //%TODO: Not zeroing entire bucket
+#if MRAM
   for(int i = 0; i < ((num_buckets * (sizeof(bucket_t))) / 32); i++){
 	  mram_write_32bit_blocks((uint32_t)(hashtable->table) + (i*32), &zero, 1);
   }
@@ -228,8 +276,23 @@ clht_hashtable_create(uint64_t num_buckets)
       mram_write_32bit_blocks((uint32_t) &hashtable->table[i].key[j], &zero, 1);
 	}
    }
+#else
+  memset(hashtable->table, 0, num_buckets * (sizeof(bucket_t)));
 
+  uint64_t i;
+  for (i = 0; i < num_buckets; i++)
+    {
+      hashtable->table[i].lock = 0;
+      hashtable->table[i].next = NULL;
+      uint32_t j;
+      for (j = 0; j < ENTRIES_PER_BUCKET; j++)
+	{
+	  hashtable->table[i].key[j] = 0;
+	}
+    }
+  #endif
   hashtable->num_buckets = num_buckets;
+
 
 #ifdef STATS
   //Global variable
@@ -270,7 +333,11 @@ clht_get(clht_hashtable_t* hashtable, clht_addr_t key)
     {
       for (j = 0; j < ENTRIES_PER_BUCKET; j++)
 	{
-	  clht_val_t val = bucket->val[j];
+    #if MRAM
+	  __IO clht_val_t val = bucket->val[j];
+    #else
+    clht_val_t val = bucket->val[j];
+    #endif
 #ifdef __tile__
 	  _mm_lfence();
 #endif
@@ -308,7 +375,8 @@ bucket_exists(bucket_t* bucket, clht_addr_t key)
 	      return true;
 	    }
 	}
-
+  #if MRAM
+  #ifdef MRAM_CHECKS
       uint32_t nextAddress = (uint32_t)bucket->next;
       if(nextAddress != 0 && ((nextAddress < MRAM_BANK_ADDR) || ( nextAddress > MRAM_BANK_ADDR_LIMIT_4Mb))){
     	  //printf("Bucket's next pointer has an illegal value of %lx\n Current bucket has address %lx\n", nextAddress, (uint32_t) bucket);
@@ -319,6 +387,8 @@ bucket_exists(bucket_t* bucket, clht_addr_t key)
     	     printf("Bucket's next pointer still has an illegal value on second try %lx\n Current bucket has address %lx\n", nextAddress, (uint32_t) bucket);
     	  }*/
       }
+  #endif
+  #endif
 
 
       bucket = bucket->next;
@@ -334,7 +404,11 @@ clht_put(clht_t* h, clht_addr_t key, clht_val_t val)
 
   // Get hashtable address
   clht_hashtable_t* hashtable;
+  #if MRAM
   mram_read_16bit_blocks((uint32_t) h, &hashtable, 2);
+  #else
+  hashtable = h->ht;
+  #endif
   uint32_t bin = clht_hash(hashtable, key);
   //Read first bin address
   //uint32_t tableAddress = ;
@@ -392,21 +466,38 @@ clht_put(clht_t* h, clht_addr_t key, clht_val_t val)
 	  if (empty == NULL)
 	    {
 	      DPP(put_num_failed_expand);
+        #if MRAM
 	      bucket_t * new_bucket = clht_bucket_create();
 	      mram_write_32bit_blocks((uint32_t) &bucket->next, &new_bucket, 1);
 	      mram_write_32bit_blocks((uint32_t) &bucket->next->key[0], &key, 1);
+        #else
+        bucket->next = clht_bucket_create();
+	      bucket->next->key[0] = key;
+        #endif
 #ifdef __tile__
 	      _mm_sfence();
 #endif
+        #if MRAM
 	      mram_write_32bit_blocks((uint32_t) &bucket->next->val[0], &val, 1);
+        #else
+        bucket->next->val[0] = val;
+        #endif
 	    }
 	  else
 	    {
+        #if MRAM
 	      mram_write_32bit_blocks((uint32_t) empty_v, &val, 1);
+        #else
+        *empty_v = val;
+        #endif
 #ifdef __tile__
 	      _mm_sfence();
 #endif
+        #if MRAM
 	      mram_write_32bit_blocks((uint32_t) empty, &key, 1);
+        #else
+        *empty = key;
+        #endif
 	    }
 
 	  LOCK_RLS(lock);
@@ -536,7 +627,11 @@ clht_destroy(clht_hashtable_t* hashtable)
 	bucket_t * bucket = NULL, * aux = NULL;
   for(int i = 0; i < hashtable->num_buckets; i++){
 	  bucket = hashtable->table[i].next;
+    #if MRAM
 	  while(bucket != NULL && (uint32_t) bucket < MRAM_BANK_ADDR_LIMIT_4Mb && (uint32_t) bucket > MRAM_BANK_ADDR){
+    #else
+    while(bucket != NULL){
+    #endif
 		 aux = bucket;
 		 bucket = aux->next;
 		 free(aux);
@@ -629,12 +724,13 @@ void _map_occupy_32byte(uint8_t * memoryMap, uint32_t startAddress, uint32_t bas
 
 }
 
+#if STM32
 //All buckets should be 32byte aligned
 void print_mem_map(clht_hashtable_t* hashtable){
 	bucket_t * bucket ;
-	uint8_t memoryMap[MRAM_NR_BYTES/32];
+	uint8_t memoryMap[NUM_BYTES_CAPACITY/32];
 
-	for(int i = 0; i < MRAM_NR_BYTES/32; i++){
+	for(int i = 0; i < NUM_BYTES_CAPACITY/32; i++){
 		memoryMap[i] = '-';
 	}
 
@@ -647,28 +743,32 @@ void print_mem_map(clht_hashtable_t* hashtable){
 		}
 	}
 
-	for(int i = 0; i < MRAM_NR_BYTES/32; i++){
+	for(int i = 0; i < NUM_BYTES_CAPACITY/32; i++){
 		printf("%c", memoryMap[i]);
 		if((i != 0) && (i % 100 == 0)){
 			printf("\n");
+      #if STM32
 			HAL_Delay(500);
+      #else
+      sleep(500);
+      #endif
 		}
 
 	}
 	printf("\n");
 
 }
+#endif
 
 #ifdef DEBUG
 void print_debug(){
-    printf("Debug stats.\n \tPut_num_restarts: %lu;\n\tPut_num_failed_expand: %lu;\n\tPut_num_failed_on_new: %lu;\n", put_num_restarts, put_num_failed_expand, put_num_failed_on_new);
+    printf("Debug stats.\n \tPut_num_restarts: "PRINT_UNSIGNED_FORMAT";\n\tPut_num_failed_expand: "PRINT_UNSIGNED_FORMAT";\n\tPut_num_failed_on_new: "PRINT_UNSIGNED_FORMAT";\n", put_num_restarts, put_num_failed_expand, put_num_failed_on_new);
 }
 #endif
 
 #ifdef STATS
 void print_stats(){
-	printf("Number of buckets: %lu\n Number of collisions: %lu\n", numBuckets, numCollisions);
+	printf("Number of buckets: " PRINT_UNSIGNED_FORMAT "\n Number of collisions: "PRINT_UNSIGNED_FORMAT"\n", numBuckets, numCollisions);
 }
 #endif
 
-#endif
