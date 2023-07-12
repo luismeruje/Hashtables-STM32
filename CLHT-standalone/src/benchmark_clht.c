@@ -19,13 +19,14 @@
 #if STM32
 #define PRINT_UNSIGNED_FORMAT "%lu"
 #include "stm32h7xx_hal.h"
+extern char keys[NUM_RECORDS_TO_INSERT][FIELD_SIZE];
 #else 
 #include KEYS_FILE
 #define PRINT_UNSIGNED_FORMAT "%u"
 #include <time.h>
 #endif
 
-extern char keys[NUM_RECORDS_TO_INSERT][FIELD_SIZE];
+
 #define INITIAL_SIZE_PERCENTAGE 2
 
 /*TODO:
@@ -41,7 +42,7 @@ extern char keys[NUM_RECORDS_TO_INSERT][FIELD_SIZE];
 
 
 //Time count from: https://stackoverflow.com/questions/66241806/calculate-the-execution-time-of-program-in-c
-void benchmark_clht_write_throughput(){
+void benchmark_clht_throughput(){
 	uint32_t failedPutsError = 0;
 	uint32_t failedPutsValueAlreadyExists = 0;
 	int keysNotFound = 0, correctValues = 0;
@@ -155,6 +156,6 @@ void benchmark_clht_write_throughput(){
 
 #if !STM32
 int main(void){
-	benchmark_clht_write_throughput();
+	benchmark_clht_throughput();
 }
 #endif

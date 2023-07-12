@@ -131,6 +131,8 @@ clht_bucket_create()
   bucket_t* bucket = NULL;
   #if MRAM
   bucket = memalign_mram(CACHE_LINE_SIZE, sizeof(bucket_t));
+  #elif STM32
+  bucket = memalign(CACHE_LINE_SIZE, sizeof(bucket_t));
   #else
   posix_memalign((void **) &bucket, CACHE_LINE_SIZE, sizeof(bucket_t));
   #endif
@@ -186,6 +188,8 @@ clht_create(uint64_t num_buckets)
 {
   #if MRAM
   clht_t* w = (clht_t*) memalign_mram(CACHE_LINE_SIZE, sizeof(clht_t));
+  #elif STM32
+  clht_t* w = memalign(CACHE_LINE_SIZE, sizeof(clht_t));
   #else
   clht_t* w;
   posix_memalign((void **) &w, CACHE_LINE_SIZE, sizeof(clht_t));
@@ -228,6 +232,8 @@ clht_hashtable_create(uint64_t num_buckets)
   /* Allocate the table itself. */
   #if MRAM
   hashtable = (clht_hashtable_t*) memalign_mram(CACHE_LINE_SIZE, sizeof(clht_hashtable_t));
+  #elif STM32
+  hashtable = memalign(CACHE_LINE_SIZE, sizeof(clht_hashtable_t));
   #else
   posix_memalign((void **) &hashtable, CACHE_LINE_SIZE, sizeof(clht_hashtable_t));
   #endif
@@ -244,6 +250,8 @@ clht_hashtable_create(uint64_t num_buckets)
   printf("Table base address: %p\n", pointer);
   mram_write_32bit_blocks((uint32_t)  &hashtable->table, &pointer, 1);
   printf("Stored table base address: %p\n", hashtable->table);
+  #elif STM32
+  hashtable->table = memalign(CACHE_LINE_SIZE, num_buckets * (sizeof(bucket_t)));
   #else
   posix_memalign( (void **) &hashtable->table, CACHE_LINE_SIZE, num_buckets * (sizeof(bucket_t)));
   #endif
@@ -251,7 +259,9 @@ clht_hashtable_create(uint64_t num_buckets)
   if (hashtable->table == NULL)
     {
       printf("** alloc: hashtable->table\n"); fflush(stdout);
+#if !MRAM
       free(hashtable);
+#endif
       return NULL;
     }
 

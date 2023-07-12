@@ -7,7 +7,7 @@
 
 #ifndef INC_BENCHMARK_CLHT_H_
 #define INC_BENCHMARK_CLHT_H_
-void benchmark_clht_write_throughput();
+void benchmark_clht_throughput();
 
 
 #endif /* INC_BENCHMARK_CLHT_H_ */

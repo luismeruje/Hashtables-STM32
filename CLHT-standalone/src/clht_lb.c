@@ -251,7 +251,9 @@ clht_hashtable_create(uint64_t num_buckets)
   if (hashtable->table == NULL)
     {
       printf("** alloc: hashtable->table\n"); fflush(stdout);
+#if !MRAM
       free(hashtable);
+#endif
       return NULL;
     }
 

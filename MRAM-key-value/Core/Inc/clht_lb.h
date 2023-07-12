@@ -54,7 +54,6 @@
 #define CACHE_LINE_SIZE 32
 #define ENTRIES_PER_BUCKET 3
 //#define VANILLA_CLHT
-#define MRAMEN 1
 
 
 #ifndef ALIGNED
