@@ -60,7 +60,7 @@ Furthermore, LPHT should be configured to accommodate the specific byte size you
 
  `USABLE_CAPACITY` sets how much of the hashtable's space (i.e., `NUM_BYTES_CAPACITY`) is available for storing key/value pairs. The difference between the two, $NUM\_BYTES\_CAPACITY - USABLE\_CAPACITY$, is the amount of reserved space for slot occupation information. Currently, the value of USABLE_CAPACITY has to be set by hand, and can be calculated as:
 
-$$ NUM\_BYTES\_CAPACITY - 17 \over 1+ (1 / (2 * FIELD\_SIZE * 8)) $$
+$$ NUM\\_BYTES\\_CAPACITY - 17 \over 1 + (1 / (2 * FIELD\\_SIZE * 8)) $$
 
 , rounded to the nearest multiple of 32 that is less than the given result.
 
