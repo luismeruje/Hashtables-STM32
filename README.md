@@ -36,3 +36,8 @@ The STM32CubeIDE project is setup to be used with a `NUCLEO-H743ZI` board. If yo
 The linear probing Hash Table divides a zone of memory into consecutive key/value slots. During a put operation, the key is hashed into a slot. If the slot is empty, the key/value pair is inserted into the slot, otherwise an attempt is made for the following slot, and so on until an available spot is found. Slot occupation information is kept in a separate array of bytes, where each bit describes the occupation of a particular slot.
 
 For further details on LPHT usage see [LPHT's README](./LPHT.md). 
+
+# CLHT - Cache Line Hash Table
+The Cache Line Hash Table (CLHT) is organized into buckets, where each bucket contains a set of key/value pairs, a lock, and a pointer to the next bucket. Keys are hashed into buckets, which when full add a new bucket in a linked list configuration. CLHT leverages the CPU's cache lines to improve performance by matching the bucket's size to the CPU's cache line size. 
+
+For further detail on CLHT usage see [CLHT's README](./CLHT.md)
