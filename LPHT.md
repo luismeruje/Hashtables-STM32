@@ -250,8 +250,7 @@ This will enable a series of code blocks in `MRAM-key-value/Core/Src/Hash_Table/
 
 Also, make sure to adjust the space settings in `MRAM-key-value/Core/Src/Hash_Table/lpht.c`:
 
-```
-
+```c++
 //NUM_BYTES_CAPACITY minus space reserved for metadata (i.e., HashMapString struct) rounded to the nearest multiple of 32
 #define USABLE_CAPACITY 521600
 ```
