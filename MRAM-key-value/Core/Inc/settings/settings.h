@@ -11,7 +11,7 @@
 //LPHT settings
 //=============
 #define STM32 1
-#define MRAM 1
+#define MRAM 0
 #define MMAP 0
 #define BILLION  1000000000.0
 
@@ -22,11 +22,11 @@
 //BENCHMARK Settings
 //==================
 //For clht, select only 4 byte-sized keys/values.
-#define KEYS_FILE "keys-4bytes.h"
-#define NUM_RECORDS_TO_INSERT 5000 //25000
-#define FIELD_SIZE 4 //Number of bytes for each key/value. Don't forget 1 byte is for \0
+#define KEYS_FILE "keys-32bytes.h"
+#define NUM_RECORDS_TO_INSERT 4096 //25000
+#define FIELD_SIZE 32 //Number of bytes for each key/value. Don't forget 1 byte is for \0
 //WARNING: Only tested with this specific NUM_BYTES_CAPACITY
-#define NUM_BYTES_CAPACITY 524288
+#define NUM_BYTES_CAPACITY 300000
 //==================
 
 #if STM32

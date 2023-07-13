@@ -417,9 +417,9 @@ int main(void)
 	 //Iterate over seed list
 
 	//print_malloc_map();
-	benchmark_clht_throughput();
+	//benchmark_clht_throughput();
 	//test_clht();
-	//benchmark_lpht_throughput();
+	benchmark_lpht_throughput();
 
 
 	HAL_Delay(30*1000);

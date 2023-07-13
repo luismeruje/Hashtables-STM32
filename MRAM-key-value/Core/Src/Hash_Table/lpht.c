@@ -37,7 +37,7 @@
 
 //NUM_BYTES_CAPACITY minus space reserved for metadata (i.e., HashMapString struct) rounded to the nearest multiple of 32
 //For some reason it is not being correctly calculated in C code, so I am calculating it by hand. NUM_BYTES_CAPACITY is in the settings header file
-#define USABLE_CAPACITY 521600 // Calculated as: ((double) NUM_BYTES_CAPACITY - 17)/(1 + (1/((double)KEY_VALUE_PAIR_SIZE*8))) | round(nearest 32 aligned number lower than the calculated value) . Equation from three variable system.
+#define USABLE_CAPACITY 299392 // Calculated as: ((double) NUM_BYTES_CAPACITY - 17)/(1 + (1/((double)KEY_VALUE_PAIR_SIZE*8))) | round(nearest 32 aligned number lower than the calculated value) . Equation from three variable system.
 #define NUM_BLOCKS (USABLE_CAPACITY / KEY_VALUE_PAIR_SIZE)
 #define RESERVED_CAPACITY_METADATA (NUM_BYTES_CAPACITY - USABLE_CAPACITY)
 
