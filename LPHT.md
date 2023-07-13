@@ -165,7 +165,7 @@ vim MRAM-key-value/Core/Inc/settings/settings.h
 #define NUM_RECORDS_TO_INSERT 4096 //25000
 #define FIELD_SIZE 32 //Number of bytes for each key/value. Don't forget 1 byte is for \0
 
-#define NUM_BYTES_CAPACITY 524288
+#define NUM_BYTES_CAPACITY 300000
 ```
 
 And the LPHT file:
@@ -177,7 +177,7 @@ vim MRAM-key-value/Core/Src/Hash_Table/lpht.c
 ```c++
 
 //NUM_BYTES_CAPACITY minus space reserved for metadata (i.e., HashMapString struct) rounded to the nearest multiple of 32
-#define USABLE_CAPACITY 521600
+#define USABLE_CAPACITY 299392
 ```
 
 
