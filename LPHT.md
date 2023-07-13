@@ -7,7 +7,7 @@ The Hash Table is available both as an STM32CubeIDE project (`MRAM-key-value` fo
 ### Basic usage
 To use the LPHT you only need the files contained in the `LPHT-standalone` folder. The basic workflow involves creating a new Hash Table and then performing put/get operations over it. For example:
 
-```
+```c++
 #include "lpht.h"
 
 int main(void){
@@ -82,7 +82,7 @@ cp MRAM-key-value/Core/Inc/keys-32bytes.h LPHT-standalone/inc/
 
 Adjust the necessary settings in `LPHT-standalone/inc/settings.h` and `LPHT-standalone/src/lpht.c`. For this test, make sure the values are set as follows:
 
-```
+```bash
 vim LPHT-standalone/inc/settings.h
 ```
 
@@ -103,7 +103,7 @@ vim LPHT-standalone/inc/settings.h
 #define NUM_BYTES_CAPACITY 524288
 ```
 
-```
+```bash
 vim LPHT-standalone/src/lpht.c
 ```
 
@@ -147,7 +147,7 @@ The standard output is redirected to the **SWV ITM Data Console**, so make sure 
 
 Make sure to adjust your settings in the `MRAM-key-value/Core/Inc/settings/settings.h` and `MRAM-key-value/Core/Src/Hash_Table/lpht.c` files. Make sure to enable STM32 and leave the rest of the settings disabled for now. Configure the dataset you wanna use, and set the correct size accordingly. Also, make sure to set `MEMORY_ADDRESS_SIZE` to `uint32_t`. The settings files should look similar to this:
 
-```
+```bash
 vim MRAM-key-value/Core/Inc/settings/settings.h
 ```
 
@@ -170,7 +170,7 @@ vim MRAM-key-value/Core/Inc/settings/settings.h
 
 And the LPHT file:
 
-```
+```bash
 vim MRAM-key-value/Core/Src/Hash_Table/lpht.c
 ```
 
@@ -223,6 +223,10 @@ Consistency check.
 Running LPHT on an external memory device is simple. You only have to change the LPHT pointers to match the location of the external device, and adjust the memory capacity of the table to be in accordance with the limitations of the device. The project includes code to run the Hash Table on an external MRAM device set at address `0xc0000000`. 
 
 To enable the use of MRAM change the settings at `MRAM-key-value/Core/Inc/settings/settings.h` :
+
+```bash
+vim MRAM-key-value/Core/Inc/settings/settings.h
+```
 
 ```c++
 //LPHT settings
